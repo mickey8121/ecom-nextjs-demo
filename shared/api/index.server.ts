@@ -6,9 +6,11 @@ export {
   type BffErrorBody,
 } from './bff-response';
 export { parseJsonBody, parseQuery } from './parse';
+export { loadSection, type SectionResult } from './section';
 export {
   createProxySessionStore,
   createRouteHandlerSessionStore,
+  getServerComponentClient,
   getServerComponentSessionStore,
   type ProxySessionStore,
 } from './session/adapters';

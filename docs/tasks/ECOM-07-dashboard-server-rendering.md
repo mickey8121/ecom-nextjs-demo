@@ -1,7 +1,7 @@
 ---
 id: ECOM-07
 title: Dashboard server rendering
-status: todo
+status: done
 depends_on: [ECOM-04, ECOM-05, ECOM-06]
 branch: feat/ecom-07-dashboard-server-rendering
 ---
