@@ -12,7 +12,7 @@ squash-merged into `main`.
 | [ECOM-05](ECOM-05-domain-entities.md)                       | Domain entities                       | 03         | done   |
 | [ECOM-06](ECOM-06-login-and-logout.md)                      | Login and logout                      | 03, 05     | done   |
 | [ECOM-07](ECOM-07-dashboard-server-rendering.md)            | Dashboard server rendering            | 04, 05, 06 | done   |
-| [ECOM-08](ECOM-08-product-pagination.md)                    | Product pagination                    | 07         | todo   |
+| [ECOM-08](ECOM-08-product-pagination.md)                    | Product pagination                    | 07         | done   |
 | [ECOM-09](ECOM-09-add-to-cart.md)                           | Add to cart                           | 07         | todo   |
 | [ECOM-10](ECOM-10-deployment-and-readme.md)                 | Deployment and README                 | 08, 09     | todo   |
 
