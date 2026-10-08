@@ -1,7 +1,7 @@
 ---
 id: ECOM-05
 title: Domain entities
-status: todo
+status: done
 depends_on: [ECOM-03]
 branch: feat/ecom-05-domain-entities
 ---
