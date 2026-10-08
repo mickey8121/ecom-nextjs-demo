@@ -1,7 +1,7 @@
 ---
 id: ECOM-04
 title: Request boundary (proxy.ts)
-status: todo
+status: done
 depends_on: [ECOM-03]
 branch: feat/ecom-04-request-boundary-proxy
 ---
