@@ -82,9 +82,10 @@ Architecture — the reasons are in `docs/spec.md` and `docs/adr/`:
 
 Process:
 
-- Tasks live in `docs/tasks/ECOM-NN-<slug>.md`. One task = one branch `feat/ecom-NN-<slug>` =
-  one PR titled `ECOM-NN: <title>`, squash-merged into `main`. The PR's last commit sets the
-  task's `status` to `done`.
+- Tasks live in `docs/tasks/ECOM-NN-<slug>.md`, done in numeric order. One task = one branch
+  (`<type>/ecom-NN-<slug>`, the task's `branch` field) = one PR titled `ECOM-NN: <title>`,
+  squash-merged into `main`. The PR's last commit sets the task's `status` to `done` in the task
+  file and in `docs/tasks/README.md`.
 - Run `make fmt` before `/ship`: `check` fails on unformatted files.
 - Commits are SSH-signed. Never pass a flag that disables signing.
 
