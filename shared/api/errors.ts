@@ -51,3 +51,9 @@ export class AppError extends Error {
     this.status = status ?? ERROR_CATALOG[code].status;
   }
 }
+
+export function toUserMessage(error: unknown) {
+  return error instanceof AppError
+    ? error.message
+    : ERROR_CATALOG.INTERNAL_ERROR.message;
+}
