@@ -7,7 +7,7 @@ squash-merged into `main`.
 | ----------------------------------------------------------- | ------------------------------------- | ---------- | ------ |
 | [ECOM-01](ECOM-01-project-skeleton-and-layer-boundaries.md) | Project skeleton and layer boundaries | —          | done   |
 | [ECOM-02](ECOM-02-upstream-client-and-error-catalog.md)     | Upstream client and error catalog     | 01         | done   |
-| [ECOM-03](ECOM-03-session-and-token-refresh.md)             | Session and token refresh             | 02         | todo   |
+| [ECOM-03](ECOM-03-session-and-token-refresh.md)             | Session and token refresh             | 02         | done   |
 | [ECOM-04](ECOM-04-request-boundary-proxy.md)                | Request boundary (`proxy.ts`)         | 03         | todo   |
 | [ECOM-05](ECOM-05-domain-entities.md)                       | Domain entities                       | 03         | todo   |
 | [ECOM-06](ECOM-06-login-and-logout.md)                      | Login and logout                      | 03, 05     | todo   |
