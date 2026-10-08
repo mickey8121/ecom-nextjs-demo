@@ -71,7 +71,12 @@ Architecture — the reasons are in `docs/spec.md` and `docs/adr/`:
   Never import a slice's internals.
 - No root `components/`, `hooks/` or `pages/`. A root `pages/` would switch on the Pages Router.
 - Tokens live only in httpOnly cookies. They never reach client JS, storage or a response body.
-- Upstream requests made with a user's token use `cache: 'no-store'`. No module-level per-user state.
+- Users see only messages from the error catalog in `shared/api`. Raw upstream or exception text
+  goes to server logs only — never into a response body, a toast or an error boundary.
+- Session-derived data is never wrapped in `use cache` (any variant); upstream calls use
+  `cache: 'no-store'`. No module-level per-user state — the refresh in-flight map is the only exception.
+- Data access functions receive an authenticated client; they never read cookies themselves.
+- Auth transitions (login, logout, forced logout) use full-page navigation, not the client router.
 - Environment variables are for secrets only, and this project has none. Non-secret config
   (the API base URL, the token TTL) lives in `shared/config`.
 
