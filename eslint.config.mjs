@@ -45,7 +45,10 @@ const eslintConfig = defineConfig([
       ],
       'boundaries/files': [
         { category: 'proxy', pattern: 'proxy.ts' },
-        { category: 'config', pattern: ['*.config.{mjs,ts}', 'next-env.d.ts'] },
+        {
+          category: 'config',
+          pattern: ['*.config.{mjs,mts,ts}', 'next-env.d.ts'],
+        },
         { category: 'test', pattern: ['**/*.test.{ts,tsx}', 'test/**'] },
       ],
     },

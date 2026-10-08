@@ -388,10 +388,11 @@ Tokens, passwords and cookie values are never logged.
 ## 7. Client-side data flow
 
 - One BFF client in `shared/api` (`index.ts`): `fetch` to `/api/*`, parses the error shape into a
-  typed `BffError { code, status, message }`, and on `UNAUTHENTICATED` performs a full-page
-  navigation to `/login`.
+  typed `AppError { code, status, message }`, and on `UNAUTHENTICATED` clears session data and
+  performs a full-page navigation to `/login`. The message is taken from the catalog by code; the
+  body's `message` is ignored, so refinements of a message stay on the server.
 - Anything that is not the BFF error shape — a network failure, an HTML error page from the host,
-  a body that is not JSON — becomes a synthesised `BffError` (`NETWORK_ERROR` or `UPSTREAM_ERROR`)
+  a body that is not JSON — becomes a synthesised `AppError` (`NETWORK_ERROR` or `UPSTREAM_ERROR`)
   with its catalog message. The message of a caught `TypeError` or `SyntaxError` is never shown.
 - Features call the BFF client and report failures with `sonner` toasts.
 - Auth transitions (login, logout, forced logout) use **full-page navigation**, not the client
@@ -471,7 +472,7 @@ Vitest, node environment. Unit tests cover logic and flows, not markup.
 The single-refresh guarantee is provable only here: DummyJSON accepts duplicate refreshes (§2.3),
 so a broken implementation would still look correct against the live API.
 
-`import 'server-only'` is aliased to an empty module (`test/empty-module.ts`) in `vitest.config.ts`.
+`import 'server-only'` is aliased to an empty module (`test/empty-module.ts`) in `vitest.config.mts`.
 
 ## 12. Tooling and delivery
 

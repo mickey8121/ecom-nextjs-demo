@@ -34,7 +34,7 @@ skills never invoke a package manager directly.
 | ------------------------ | --------------------------------------------------------------- | -------------------------------------- |
 | `check-file FILE=<path>` | ESLint on one file, zero warnings, ignored files skipped        | the `post-edit` hook, after every edit |
 | `check`                  | `prettier --check`, `next typegen` + `tsc --noEmit`, `eslint .` | `/ship` and CI                         |
-| `test`                   | `vitest run --passWithNoTests`                                  | `/ship` and CI                         |
+| `test`                   | `vitest run`                                                    | `/ship` and CI                         |
 | `build`                  | `next build`                                                    | CI                                     |
 | `fmt`                    | `prettier --write .`                                            | humans and skills, never automatically |
 
@@ -94,13 +94,13 @@ Process:
 
 - `pnpm typecheck` runs `next typegen` before `tsc --noEmit`. Running bare `tsc`
   skips the generated route types and can report errors that aren't real.
-- `make test` passes `--passWithNoTests`, so it stays green while no `*.test.ts(x)`
-  files exist. Green does not mean tested.
 - Some errors (e.g. `cacheComponents` violations) appear only in `next build`,
   not in `check`. CI runs `make build` for that reason.
 - `AGENTS.md` is rewritten by `next dev`. Don't edit it; it is excluded from Prettier.
-- `import 'server-only'` throws outside Next. `vitest.config.ts` aliases it to
+- `import 'server-only'` throws outside Next. `vitest.config.mts` aliases it to
   `test/empty-module.ts`.
+- Next's lint rule `no-location-assign-relative-destination` rejects `location.assign('/…')`.
+  Auth transitions navigate through `navigateFullPage` from `shared/lib`.
 - A new top-level folder or root file fails `boundaries/no-unknown-files`. Register it in
   `eslint.config.mjs` (`boundaries/elements` or `boundaries/files`) only if the layers allow it.
 - `.env*` is git-ignored and unreadable by Claude (`permissions.deny`). That is intended:
