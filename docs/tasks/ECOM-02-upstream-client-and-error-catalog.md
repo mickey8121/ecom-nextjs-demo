@@ -1,7 +1,7 @@
 ---
 id: ECOM-02
 title: Upstream client and error catalog
-status: todo
+status: done
 depends_on: [ECOM-01]
 branch: feat/ecom-02-upstream-client-and-error-catalog
 ---
