@@ -1,7 +1,7 @@
 ---
 id: ECOM-03
 title: Session and token refresh
-status: todo
+status: done
 depends_on: [ECOM-02]
 branch: feat/ecom-03-session-and-token-refresh
 ---
