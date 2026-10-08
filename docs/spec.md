@@ -200,7 +200,8 @@ Two paths, one mechanism (§4.6):
    started, and Server Components cannot set cookies at all.
 2. **Reactive, in the authenticated fetch, for every upstream call.** On `401` from DummyJSON:
    - if the store already holds a newer access token than the one that failed (another request
-     refreshed meanwhile), retry with it;
+     refreshed meanwhile), retry with it — "newer" means different: the store only ever receives
+     fresh pairs;
    - otherwise refresh (single-flight), store the new pair, and retry the original request once;
    - a second `401` ends the session (§4.5).
 
@@ -302,8 +303,10 @@ Rules (enforced by `eslint-plugin-boundaries`, added with the project skeleton):
   runs in a route handler, a Server Component or a test.
 - `getCurrentUser` is wrapped in React `cache`, so all sections of one render share one `/auth/me`
   call.
-- The user id is always derived on the server — from the session's access token claims — never
-  taken from a request body. The same token goes upstream, so forged claims are rejected there.
+- The user id is always derived on the server — from the session's access token claims, or the
+  refresh token's when the access cookie has expired — never taken from a request body. A session
+  whose tokens carry no id is unauthenticated. The same token goes upstream, so forged claims are
+  rejected there.
 - Upstream responses are mapped to DTOs owned by the entities (`UserDto`, `ProductDto`,
   `CartDto`). The browser never sees raw DummyJSON payloads; this also guarantees tokens in the
   login response are dropped.

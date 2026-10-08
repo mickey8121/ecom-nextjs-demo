@@ -19,7 +19,8 @@ handled entirely on the Next.js server.
 - `app/` — Next.js App Router: routing, layouts, page composition, `api/**/route.ts` (the BFF)
 - `widgets/`, `features/`, `entities/`, `shared/` — FSD layers at the repo root
 - `proxy.ts` — request boundary at the repo root: route access and proactive token refresh
-- `test/` — Vitest support (stubs, test doubles), outside the FSD layers
+- `test/` — Vitest support, outside the FSD layers: `FakeCookies` for `next/headers`, `makeJwt`,
+  `deferred`, `MemoryStorage`
 - `docs/spec.md` — product and architecture spec; `docs/adr/` — decisions via `/adr`;
   `docs/tasks/` — one file per task
 - `.claude/` — harness settings; rules files go in `.claude/rules/`
