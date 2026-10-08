@@ -1,0 +1,15 @@
+{
+  "extraKnownMarketplaces": {
+    "mickey-kit": {
+      "source": { "source": "github", "repo": "mickey8121/claude-kit" }
+    }
+  },
+  "enabledPlugins": {
+    "core@mickey-kit": true,
+    "web-next@mickey-kit": true,
+    "supabase@mickey-kit": false,
+    "llm-product@mickey-kit": false,
+    "mobile-rn@mickey-kit": false,
+    "api-node@mickey-kit": false
+  }
+}
