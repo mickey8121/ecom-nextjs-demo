@@ -100,6 +100,8 @@ Process:
 - `AGENTS.md` is rewritten by `next dev`. Don't edit it; it is excluded from Prettier.
 - `import 'server-only'` throws outside Next. `vitest.config.mts` aliases it to
   `test/empty-module.ts`.
+- `next/experimental/testing/server` in 16.4 exports `unstable_doesMiddlewareMatch`; the
+  `unstable_doesProxyMatch` named in the proxy docs does not exist yet.
 - Next's lint rule `no-location-assign-relative-destination` rejects `location.assign('/…')`.
   Auth transitions navigate through `navigateFullPage` from `shared/lib`.
 - A new top-level folder or root file fails `boundaries/no-unknown-files`. Register it in
