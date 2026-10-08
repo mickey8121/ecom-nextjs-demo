@@ -6,6 +6,7 @@ import { cache } from 'react';
 
 import { SESSION_COOKIES } from '@/shared/config';
 
+import { createAuthenticatedClient } from './client';
 import {
   deleteSessionCookies,
   readSessionCookies,
@@ -26,6 +27,10 @@ export async function createRouteHandlerSessionStore(): Promise<SessionStore> {
 export const getServerComponentSessionStore = cache(
   async (): Promise<SessionStore> =>
     createSessionStore(readSessionCookies(await cookies())),
+);
+
+export const getServerComponentClient = cache(async () =>
+  createAuthenticatedClient(await getServerComponentSessionStore()),
 );
 
 export type ProxySessionStore = SessionStore & {
