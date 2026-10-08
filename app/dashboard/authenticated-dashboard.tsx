@@ -45,7 +45,7 @@ export async function AuthenticatedDashboard() {
       products={
         <Suspense fallback={<SectionLoading label="Loading products…" />}>
           <SectionData load={products}>
-            {(page) => <ProductFeed page={page} />}
+            {(page) => <ProductFeed initialPage={page} />}
           </SectionData>
         </Suspense>
       }
