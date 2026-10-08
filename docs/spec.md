@@ -290,7 +290,8 @@ Rules (enforced by `eslint-plugin-boundaries`, added with the project skeleton):
 - A slice is imported only through its public API: `index.ts` (client-safe) or
   `index.server.ts` (server-only, starts with `import 'server-only'`).
 - No files outside known layers: no root `components/`, `hooks/`, `pages/` (a root `pages/` would
-  turn on the Pages Router), no `src/`.
+  turn on the Pages Router), no `src/`. Test support (stubs, test doubles) lives in a root `test/`
+  folder.
 - Providers live by their dependencies: business-free ones in `shared` or directly in a layout;
   domain ones in their slice; the tree is assembled in `app/`.
 
@@ -312,7 +313,8 @@ Rules (enforced by `eslint-plugin-boundaries`, added with the project skeleton):
 ### 5.4 Configuration
 
 Non-secret constants live in `shared/config`: API base URL, access token TTL (1 minute), refresh
-leeway (10 seconds), products page size (5), upstream timeout (10 seconds), cookie names.
+leeway (10 seconds), products page size (5), upstream timeout (10 seconds), cookie names, the
+`sessionStorage` key prefix (`ecom:`).
 Environment variables are reserved for secrets; the project has none, so there is no `.env`.
 
 ## 6. BFF API contract
@@ -469,7 +471,7 @@ Vitest, node environment. Unit tests cover logic and flows, not markup.
 The single-refresh guarantee is provable only here: DummyJSON accepts duplicate refreshes (§2.3),
 so a broken implementation would still look correct against the live API.
 
-`import 'server-only'` is aliased to an empty module in `vitest.config.ts`.
+`import 'server-only'` is aliased to an empty module (`test/empty-module.ts`) in `vitest.config.ts`.
 
 ## 12. Tooling and delivery
 

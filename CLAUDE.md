@@ -17,8 +17,9 @@ handled entirely on the Next.js server.
 ## Map
 
 - `app/` — Next.js App Router: routing, layouts, page composition, `api/**/route.ts` (the BFF)
-- `widgets/`, `features/`, `entities/`, `shared/` — FSD layers at the repo root (created in ECOM-01)
+- `widgets/`, `features/`, `entities/`, `shared/` — FSD layers at the repo root
 - `proxy.ts` — request boundary at the repo root: route access and proactive token refresh
+- `test/` — Vitest support (stubs, test doubles), outside the FSD layers
 - `docs/spec.md` — product and architecture spec; `docs/adr/` — decisions via `/adr`;
   `docs/tasks/` — one file per task
 - `.claude/` — harness settings; rules files go in `.claude/rules/`
@@ -66,7 +67,7 @@ Architecture — the reasons are in `docs/spec.md` and `docs/adr/`:
 - FSD layers live at the repo root, no `src/`. Next's `app/` stands in for the FSD `app` and
   `pages` layers and holds composition only — no business logic, no direct upstream fetches.
 - Imports go strictly downward: `app` → `widgets` → `features` → `entities` → `shared`.
-  Slices of one layer never import each other. Enforced by `eslint-plugin-boundaries` (from ECOM-01).
+  Slices of one layer never import each other. Enforced by `eslint-plugin-boundaries`.
 - A slice exposes `index.ts` (client-safe) and `index.server.ts` (`import 'server-only'`).
   Never import a slice's internals.
 - No root `components/`, `hooks/` or `pages/`. A root `pages/` would switch on the Pages Router.
@@ -98,7 +99,9 @@ Process:
 - Some errors (e.g. `cacheComponents` violations) appear only in `next build`,
   not in `check`. CI runs `make build` for that reason.
 - `AGENTS.md` is rewritten by `next dev`. Don't edit it; it is excluded from Prettier.
-- `import 'server-only'` throws under Vitest. Alias it to an empty module in
-  `vitest.config.ts` when the first server-side test lands.
+- `import 'server-only'` throws outside Next. `vitest.config.ts` aliases it to
+  `test/empty-module.ts`.
+- A new top-level folder or root file fails `boundaries/no-unknown-files`. Register it in
+  `eslint.config.mjs` (`boundaries/elements` or `boundaries/files`) only if the layers allow it.
 - `.env*` is git-ignored and unreadable by Claude (`permissions.deny`). That is intended:
   there are no secrets, so there is no `.env`.

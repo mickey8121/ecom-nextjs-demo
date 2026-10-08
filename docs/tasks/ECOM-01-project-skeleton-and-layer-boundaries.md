@@ -1,7 +1,7 @@
 ---
 id: ECOM-01
 title: Project skeleton and layer boundaries
-status: todo
+status: done
 depends_on: []
 branch: chore/ecom-01-project-skeleton-and-layer-boundaries
 ---
