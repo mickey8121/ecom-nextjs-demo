@@ -1,7 +1,7 @@
 ---
 id: ECOM-08
 title: Product pagination
-status: todo
+status: done
 depends_on: [ECOM-07]
 branch: feat/ecom-08-product-pagination
 ---
