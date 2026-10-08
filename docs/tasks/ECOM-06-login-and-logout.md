@@ -1,7 +1,7 @@
 ---
 id: ECOM-06
 title: Login and logout
-status: todo
+status: done
 depends_on: [ECOM-03, ECOM-05]
 branch: feat/ecom-06-login-and-logout
 ---

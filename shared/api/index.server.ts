@@ -18,6 +18,7 @@ export {
 } from './session/client';
 export { isTokenExpired } from './session/jwt';
 export { refreshSessionStore } from './session/refresh';
+export { parseTokenPair } from './session/token-pair';
 export {
   createMemorySessionStore,
   type SessionStore,

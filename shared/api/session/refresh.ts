@@ -1,17 +1,11 @@
 import 'server-only';
 
-import * as z from 'zod';
-
 import { ACCESS_TOKEN_TTL_MINUTES } from '@/shared/config';
 
 import { AppError } from '../errors';
 import { UpstreamError, upstreamRequest } from '../upstream';
 import type { SessionStore, TokenPair } from './store';
-
-const tokenPairSchema = z.object({
-  accessToken: z.string().min(1),
-  refreshToken: z.string().min(1),
-});
+import { parseTokenPair } from './token-pair';
 
 // Keyed by refresh token: concurrent callers of one session share a refresh, other sessions never do.
 const inFlight = new Map<string, Promise<TokenPair>>();
@@ -63,12 +57,7 @@ async function requestTokenPair(refreshToken: string): Promise<TokenPair> {
     throw error;
   }
 
-  const result = tokenPairSchema.safeParse(payload);
-  if (!result.success) {
-    console.error('upstream refresh returned an unexpected body');
-    throw new UpstreamError('UPSTREAM_ERROR', 200, { cause: result.error });
-  }
-  return result.data;
+  return parseTokenPair(payload, '/auth/refresh');
 }
 
 function isRejection(error: unknown) {

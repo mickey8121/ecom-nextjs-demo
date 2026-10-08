@@ -5,9 +5,9 @@ paths:
 
 # API conventions — route handlers
 
-Drafted by `/api-rules` in greenfield mode (0 route files on 2026-10-08) from the decisions in
-`docs/spec.md` §6 and ADR 00001. No handler exists yet, so no section quotes code; the first
-handlers become the reference implementation.
+Drafted by `/api-rules` in greenfield mode on 2026-10-08 from the decisions in `docs/spec.md` §6
+and ADR 00001; checked against the tree in drift mode on 2026-10-09 (2 route files). The
+reference handlers are `app/api/auth/login/route.ts` and `app/api/auth/logout/route.ts`.
 
 ## Placement
 
@@ -17,6 +17,9 @@ handlers become the reference implementation.
   map the error. No business logic and no direct upstream calls in `app/`.
 - Handlers import slices only through their `index.server.ts`, and server helpers only through
   `shared/api`'s `index.server.ts`.
+- Each `route.ts` has a `route.test.ts` beside it. `next/headers` is mocked with
+  `vi.mock('next/headers', () => ({ cookies: vi.fn() }))` plus `FakeCookies` and `mockCookies`
+  from `@/test/next-headers`.
 
 ## Config exports
 
@@ -35,6 +38,12 @@ handlers become the reference implementation.
   them. Refreshed tokens are persisted through `cookies()` by the store.
 - Handlers and the functions they call never read the token cookies directly: data access
   functions receive the authenticated client.
+- A handler that changes the session — the public ones included — passes the route-handler store
+  to a feature function, which calls `set` or `clear`; the handler never touches cookies:
+
+  ```ts
+  const user = await login(await createRouteHandlerSessionStore(), credentials);
+  ```
 
 ## Ownership
 
@@ -49,8 +58,7 @@ Not applicable — see Gaps.
 
 ## Input validation
 
-- Every body and query is parsed with a `zod` schema (`zod` is added with the first handler; it
-  is not yet a dependency).
+- Every body and query is parsed with a `zod` schema.
 - Bodies must be JSON.
 - Invalid input → `400 VALIDATION_ERROR` with the catalog message. zod's own messages are never
   returned.
@@ -68,9 +76,24 @@ Every non-2xx response:
 }
 ```
 
-- `message` always comes from the error catalog in `shared/api`, keyed by `code`. It is never
-  copied from the upstream response or from an exception. It may be refined with details the app
-  owns — a field name from its own schema — never with upstream text.
+- `message` is always the catalog message for `code` (the error catalog in `shared/api`). It is
+  never copied from the upstream response or from an exception, and never refined: the browser
+  client reads only `code` and takes the message from the catalog.
+- Every handler maps failures in one place:
+
+  ```ts
+  export async function POST() {
+    try {
+      logout(await createRouteHandlerSessionStore());
+      return new Response(null, { status: 204 });
+    } catch (error) {
+      return toErrorResponse(error);
+    }
+  }
+  ```
+
+  `toErrorResponse` lets Next.js control flow through, maps an `AppError` to its code and turns
+  anything else into a logged `INTERNAL_ERROR`.
 
 | Code                  | Status | When                                                 | Client behaviour     |
 | --------------------- | ------ | ---------------------------------------------------- | -------------------- |
@@ -100,11 +123,26 @@ Every non-2xx response:
 - Upstream failures are logged on the server with method, upstream path, status, duration and the
   upstream message. The server log is the only place raw upstream text goes.
 - Tokens, passwords and cookie values are never logged.
-- The log format is not decided — see Gaps.
+- Format: `console.error('<fixed lowercase event>', <context>)`. The context is an object of named
+  fields; only the unexpected-exception log passes the caught value whole. No logging library.
+
+  ```ts
+  console.error('upstream request failed', {
+    method,
+    path,
+    status,
+    durationMs: Math.round(performance.now() - startedAt),
+    upstreamMessage: upstreamMessage.slice(0, UPSTREAM_MESSAGE_MAX_LENGTH),
+  });
+  ```
+
+  The sites today: `upstream request failed` (`shared/api/upstream.ts`),
+  `unexpected route handler error` (`shared/api/bff-response.ts`),
+  `upstream response has no token pair` (`shared/api/session/token-pair.ts`).
 
 ## Legacy
 
-None — greenfield, 0 route files.
+None — both route files (`app/api/auth/login`, `app/api/auth/logout`) follow every rule.
 
 ## Gaps
 
@@ -112,6 +150,3 @@ None — greenfield, 0 route files.
   billing dependency, and the product has no usage limits. Rate limiting is a declared non-goal
   (`docs/spec.md` §1): an in-memory limiter is unreliable on serverless, and a real one needs a
   shared store or host firewall rules. Settled when a usage limit or a shared store is introduced.
-- **log format** — dimension: logging and observability. 0 route files; the manifest has no
-  logging or observability dependency. `docs/spec.md` §6 fixes what is logged, not the form.
-  Settled by the first handler that logs.
