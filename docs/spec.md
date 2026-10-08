@@ -302,7 +302,8 @@ Rules (enforced by `eslint-plugin-boundaries`, added with the project skeleton):
   store); they never read cookies themselves. This is dependency injection: the same function
   runs in a route handler, a Server Component or a test.
 - `getCurrentUser` is wrapped in React `cache`, so all sections of one render share one `/auth/me`
-  call.
+  call. `cache` keys by argument identity, so a render passes one authenticated client instance to
+  every section.
 - The user id is always derived on the server — from the session's access token claims, or the
   refresh token's when the access cookie has expired — never taken from a request body. A session
   whose tokens carry no id is unauthenticated. The same token goes upstream, so forged claims are
@@ -439,8 +440,9 @@ for display.
     `/auth/me` and `/auth/products` run in parallel; only carts waits for the user.
 - This is still server-side rendering: the data arrives in the same HTTP response, streamed into
   the shell. Loading fallbacks are stream placeholders, not client fetches.
-- Product images use `next/image` with a `remotePatterns` entry for `cdn.dummyjson.com`, so the
-  browser loads them from the app's `/_next/image`, not from DummyJSON.
+- Images use `next/image` with `remotePatterns` for `https://cdn.dummyjson.com/**` (product and cart
+  thumbnails) and `https://dummyjson.com/icon/**` (user avatars), so the browser loads them from the
+  app's `/_next/image`, not from DummyJSON.
 - Development-time instant-navigation validation runs at its default (`warning`) level.
 
 ## 10. Security checklist
