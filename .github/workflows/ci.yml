@@ -1,0 +1,32 @@
+# This workflow calls `make`, never the tools behind it. The Makefile is the
+# contract the post-edit hook and /ship already read, so CI checking the same
+# way is what keeps them from disagreeing about what "checked" means. Change a
+# recipe in the Makefile, not a step here.
+
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: make check
+
+      - run: make test
+
+      - run: make build

@@ -11,5 +11,12 @@
     "llm-product@mickey-kit": false,
     "mobile-rn@mickey-kit": false,
     "api-node@mickey-kit": false
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env*)",
+      "Read(//Users/*/.config/**)",
+      "Read(./.git/config)"
+    ]
   }
 }
