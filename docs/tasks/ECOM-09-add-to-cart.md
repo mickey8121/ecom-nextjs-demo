@@ -1,7 +1,7 @@
 ---
 id: ECOM-09
 title: Add to cart
-status: todo
+status: done
 depends_on: [ECOM-07]
 branch: feat/ecom-09-add-to-cart
 ---

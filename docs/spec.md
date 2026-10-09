@@ -424,6 +424,8 @@ for display.
   of `/login` (where all paths end, including the proxy's server-side redirect, which cannot touch
   `sessionStorage`).
 - Display-only: never sent to the server, never treated as a source of truth.
+- If `sessionStorage` is unavailable (blocked by the browser), the store works in memory for the
+  page's lifetime; nothing breaks.
 - Each tab has its own `sessionStorage`; a new tab starts without locally added carts.
 
 ## 9. Rendering
