@@ -59,15 +59,15 @@ Test credentials: `emilys` / `emilyspass` (any user from DummyJSON's user list w
 
 ### 2.3 Observed behaviour (verified manually, 2026-10-08)
 
-| Situation                                  | Response                                  | Consequence for the app                             |
-| ------------------------------------------ | ----------------------------------------- | --------------------------------------------------- |
-| Expired access token                       | `401 {"message":"Token Expired!"}`        | Triggers refresh                                    |
-| Missing / malformed token                  | `401`                                     | Triggers refresh (or logout if there is no session) |
-| JWT-shaped token with a bad signature      | `500 {"message":"invalid token"}`         | **Not** a refresh trigger — plain upstream error    |
-| Invalid refresh token                      | `403 {"message":"Invalid refresh token"}` | Session is over: clear cookies, go to `/login`      |
-| Wrong credentials                          | `400 {"message":"Invalid credentials"}`   | Mapped to `401 INVALID_CREDENTIALS`                 |
-| Refresh with an already-used refresh token | `200`, works again                        | No rotation — see below                             |
-| `POST /auth/carts/add`                     | `201` with a new cart id                  | Nothing is stored server-side                       |
+| Situation                                  | Response                                                   | Consequence for the app                             |
+| ------------------------------------------ | ---------------------------------------------------------- | --------------------------------------------------- |
+| Expired access token                       | `401 {"message":"Token Expired!"}`                         | Triggers refresh                                    |
+| Missing / malformed token                  | `401`                                                      | Triggers refresh (or logout if there is no session) |
+| JWT-shaped token with a bad signature      | `500 {"message":"invalid token"}` or `"invalid signature"` | **Not** a refresh trigger — plain upstream error    |
+| Invalid refresh token                      | `403 {"message":"Invalid refresh token"}`                  | Session is over: clear cookies, go to `/login`      |
+| Wrong credentials                          | `400 {"message":"Invalid credentials"}`                    | Mapped to `401 INVALID_CREDENTIALS`                 |
+| Refresh with an already-used refresh token | `200`, works again                                         | No rotation — see below                             |
+| `POST /auth/carts/add`                     | `201` with a new cart id                                   | Nothing is stored server-side                       |
 
 **Refresh tokens are not rotated.** Refresh returns a new refresh token but the old one stays
 valid. Consequences:
