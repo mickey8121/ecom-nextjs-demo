@@ -15,7 +15,7 @@ squash-merged into `main`.
 | [ECOM-08](ECOM-08-product-pagination.md)                    | Product pagination                    | 07         | done   |
 | [ECOM-09](ECOM-09-add-to-cart.md)                           | Add to cart                           | 07         | done   |
 | [ECOM-10](ECOM-10-deployment-and-readme.md)                 | Deployment and README                 | 08, 09     | done   |
-| [ECOM-11](ECOM-11-single-local-cart.md)                     | Single local cart for added products  | 09         | todo   |
+| [ECOM-11](ECOM-11-single-local-cart.md)                     | Single local cart for added products  | 09         | done   |
 
 Tasks are done in numeric order.
 

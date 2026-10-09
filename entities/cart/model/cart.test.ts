@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { toCartDto } from './cart';
+import { toAddedCartDto, toCartDto } from './cart';
 
-const item = {
+const product = {
   id: 1,
   title: 'Essence Mascara Lash Princess',
   price: 9.99,
@@ -12,24 +12,45 @@ const item = {
     'https://cdn.dummyjson.com/product-images/beauty/essence-mascara-lash-princess/thumbnail.webp',
 };
 
+const cartFields = {
+  id: 209,
+  total: 19.98,
+  discountedTotal: 17.89,
+  userId: 1,
+  totalProducts: 1,
+  totalQuantity: 2,
+};
+
+const expected = {
+  id: 209,
+  items: [{ ...product, discountedTotal: 17.89 }],
+  total: 19.98,
+  discountedTotal: 17.89,
+  totalQuantity: 2,
+};
+
 describe('toCartDto', () => {
-  it('maps products to items and keeps only the DTO fields', () => {
+  it('maps the per-item discountedTotal and keeps only the DTO fields', () => {
     const payload = {
-      id: 209,
-      products: [{ ...item, discountPercentage: 10.48, discountedPrice: 18 }],
-      total: 19.98,
-      discountedTotal: 18,
-      userId: 1,
-      totalProducts: 1,
-      totalQuantity: 2,
+      ...cartFields,
+      products: [
+        { ...product, discountPercentage: 10.48, discountedTotal: 17.89 },
+      ],
     };
 
-    expect(toCartDto(payload)).toEqual({
-      id: 209,
-      items: [item],
-      total: 19.98,
-      discountedTotal: 18,
-      totalQuantity: 2,
-    });
+    expect(toCartDto(payload)).toEqual(expected);
+  });
+});
+
+describe('toAddedCartDto', () => {
+  it('maps the per-item discountedPrice to discountedTotal and keeps only the DTO fields', () => {
+    const payload = {
+      ...cartFields,
+      products: [
+        { ...product, discountPercentage: 10.48, discountedPrice: 17.89 },
+      ],
+    };
+
+    expect(toAddedCartDto(payload)).toEqual(expected);
   });
 });

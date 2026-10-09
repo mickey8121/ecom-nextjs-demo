@@ -10,14 +10,14 @@ import { Button } from '@/shared/ui';
 import { submitAddToCart } from '../api/submit-add-to-cart';
 
 export function AddToCartButton({ productId }: { productId: number }) {
-  const addCart = useCartStore((state) => state.addCart);
+  const addToCart = useCartStore((state) => state.addToCart);
   const [pending, setPending] = useState(false);
 
   async function handleClick() {
     setPending(true);
     try {
       const cart = await submitAddToCart(productId);
-      addCart(cart);
+      addToCart(cart);
       toast.success(`Added to cart #${cart.id}`);
     } catch (error) {
       toast.error(toUserMessage(error));

@@ -94,7 +94,9 @@ DummyJSON
 
   See [ADR 00004](docs/adr/00004-cache-components-with-a-streamed-dashboard.md).
 
-- **Added carts live in `sessionStorage`:**
+- **Added products accumulate in one local cart in `sessionStorage`:**
+  - a product already in the cart adds up its quantity, and the totals are recomputed from the
+    lines;
   - one store per mount, keyed by user id, hydrated after mount;
   - cleared on every way out (logout, forced logout, opening `/login`).
 
@@ -106,14 +108,15 @@ DummyJSON
 
 ### DummyJSON behaviour, verified by hand
 
-| Case                                  | Response                                      | What the app does                       |
-| ------------------------------------- | --------------------------------------------- | --------------------------------------- |
-| Expired, missing or malformed token   | `401`                                         | Refreshes, then retries once            |
-| JWT-shaped token with a bad signature | `500` (`invalid token` / `invalid signature`) | Plain upstream error, no refresh        |
-| Invalid refresh token                 | `403 Invalid refresh token`                   | Ends the session, goes to `/login`      |
-| Wrong credentials                     | `400 Invalid credentials`                     | `401 INVALID_CREDENTIALS`, shown inline |
-| A refresh token used a second time    | `200`: refresh tokens are not rotated         | Every refresh still stores the new pair |
-| `POST /auth/carts/add`                | `201`, but nothing is stored                  | The cart is kept in the tab             |
+| Case                                  | Response                                                                | What the app does                       |
+| ------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------- |
+| Expired, missing or malformed token   | `401`                                                                   | Refreshes, then retries once            |
+| JWT-shaped token with a bad signature | `500` (`invalid token` / `invalid signature`)                           | Plain upstream error, no refresh        |
+| Invalid refresh token                 | `403 Invalid refresh token`                                             | Ends the session, goes to `/login`      |
+| Wrong credentials                     | `400 Invalid credentials`                                               | `401 INVALID_CREDENTIALS`, shown inline |
+| A refresh token used a second time    | `200`: refresh tokens are not rotated                                   | Every refresh still stores the new pair |
+| `POST /auth/carts/add`                | `201`, but nothing is stored                                            | Merged into one local cart in the tab   |
+| Per-item discounted total of a cart   | `discountedTotal` from `carts/user`, `discountedPrice` from `carts/add` | Both map to one DTO field               |
 
 Because DummyJSON accepts duplicate refreshes, a broken single-refresh implementation would still
 look correct against the live API. The guarantee is proven by unit tests instead. See
@@ -121,7 +124,7 @@ look correct against the live API. The guarantee is proven by unit tests instead
 
 ## Tests
 
-There are 190 Vitest tests in 29 files, in the node environment. They cover logic and flows, not
+There are 196 Vitest tests in 29 files, in the node environment. They cover logic and flows, not
 markup:
 
 - JWT helpers and cookie attributes.
@@ -150,8 +153,13 @@ markup:
   tokens; a rotating backend would need a shared lock.
 - **A refresh inside a Server Component is not persisted.** It lives for the rest of that render,
   and the next page request is refreshed by the proxy.
-- **Added carts are per tab.** They live in `sessionStorage`, so a new tab starts without them, and
-  DummyJSON gives every added cart the same id.
+- **The added cart is per tab.** The products added in a tab accumulate in one local cart in
+  `sessionStorage`, so a new tab starts without it.
+- **The discounted total of the added cart drifts, on purpose.** DummyJSON rounds the discounted
+  price of each added line to a whole dollar, and each click adds one unit, so the local cart sums
+  rounded unit prices: 16 items showed $248.00 against an exact $250.67. The cart keeps the values
+  DummyJSON returns, as specified; computing each line from its total and `discountPercentage`
+  would remove the drift.
 - **No rate limiting**, a declared non-goal. `POST /api/auth/login` would need it first.
 - **`/login?session=expired` logs the user out.** Anyone can link a user to that URL. Server
   Components cannot clear cookies, so this is how a dead session leaves a render without a redirect
@@ -159,6 +167,6 @@ markup:
 
 ## How it was built
 
-The work was split into ten tasks in [`docs/tasks/`](docs/tasks/README.md). Each task was one
+The work was split into eleven tasks in [`docs/tasks/`](docs/tasks/README.md). Each task was one
 branch and one squash-merged pull request, implemented with Claude Code against the spec, the ADRs
 and the boundary lint. Every pull request description records how its task was verified.

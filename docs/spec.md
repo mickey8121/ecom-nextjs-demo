@@ -59,15 +59,16 @@ Test credentials: `emilys` / `emilyspass` (any user from DummyJSON's user list w
 
 ### 2.3 Observed behaviour (verified manually, 2026-10-08)
 
-| Situation                                  | Response                                                   | Consequence for the app                             |
-| ------------------------------------------ | ---------------------------------------------------------- | --------------------------------------------------- |
-| Expired access token                       | `401 {"message":"Token Expired!"}`                         | Triggers refresh                                    |
-| Missing / malformed token                  | `401`                                                      | Triggers refresh (or logout if there is no session) |
-| JWT-shaped token with a bad signature      | `500 {"message":"invalid token"}` or `"invalid signature"` | **Not** a refresh trigger — plain upstream error    |
-| Invalid refresh token                      | `403 {"message":"Invalid refresh token"}`                  | Session is over: clear cookies, go to `/login`      |
-| Wrong credentials                          | `400 {"message":"Invalid credentials"}`                    | Mapped to `401 INVALID_CREDENTIALS`                 |
-| Refresh with an already-used refresh token | `200`, works again                                         | No rotation — see below                             |
-| `POST /auth/carts/add`                     | `201` with a new cart id                                   | Nothing is stored server-side                       |
+| Situation                                  | Response                                                                        | Consequence for the app                             |
+| ------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Expired access token                       | `401 {"message":"Token Expired!"}`                                              | Triggers refresh                                    |
+| Missing / malformed token                  | `401`                                                                           | Triggers refresh (or logout if there is no session) |
+| JWT-shaped token with a bad signature      | `500 {"message":"invalid token"}` or `"invalid signature"`                      | **Not** a refresh trigger — plain upstream error    |
+| Invalid refresh token                      | `403 {"message":"Invalid refresh token"}`                                       | Session is over: clear cookies, go to `/login`      |
+| Wrong credentials                          | `400 {"message":"Invalid credentials"}`                                         | Mapped to `401 INVALID_CREDENTIALS`                 |
+| Refresh with an already-used refresh token | `200`, works again                                                              | No rotation — see below                             |
+| `POST /auth/carts/add`                     | `201`, every time with the same cart id (`209`)                                 | Nothing is stored server-side                       |
+| Per-item discounted total of a cart        | `carts/user`: `discountedTotal`; `carts/add`: `discountedPrice`, a whole number | Both map to `CartItemDto.discountedTotal`           |
 
 **Refresh tokens are not rotated.** Refresh returns a new refresh token but the old one stays
 valid. Consequences:
@@ -81,7 +82,8 @@ valid. Consequences:
   mitigation available to the app is keeping tokens in httpOnly cookies.
 
 **Carts are not persisted.** A cart created via `/auth/carts/add` never shows up in
-`/auth/carts/user/{id}`. Added carts are therefore kept client-side for the browser tab (§8).
+`/auth/carts/user/{id}`. The products added in a tab are therefore accumulated client-side in one
+local cart (§8).
 
 ## 3. Functional requirements
 
@@ -125,7 +127,9 @@ loaded. On failure a toast shows the error and the list is unchanged.
 
 **Add to cart.** Every product has an "Add to cart" button. A click sends the product with
 quantity 1; the result (success with the created cart's id, or the error) is shown as a toast.
-On success the created cart is appended to the carts block, marked as added in this session.
+On success the returned cart is merged into one local cart, shown first in the carts block and
+marked as added in this session: a new product adds a line, a product already in it adds up its
+quantity, and the cart's totals are the sums of its lines.
 
 **Logout.** Clears the session cookies on the server, clears client-side session data, and
 performs a full-page navigation to `/login`.
@@ -406,8 +410,8 @@ Tokens, passwords and cookie values are never logged.
 
 ## 8. Client-side cart store
 
-DummyJSON does not persist added carts (§2.3), so carts created in this tab are kept on the client
-for display.
+DummyJSON does not persist added carts (§2.3), so the products added in this tab are kept on the
+client for display, in one local cart.
 
 - `zustand` with `persist` to **`sessionStorage`** (not `localStorage`: data from behind the login
   must not outlive the browser session or sit on disk indefinitely).
@@ -415,18 +419,24 @@ for display.
   never at module level — a module-level store would be shared by every request during SSR and
   leak one user's data to another.
 - Storage key includes the user id: `ecom:carts:<userId>`.
+- One cart, not a list. The first cart DummyJSON returns is stored as is, id included. Each later
+  one is merged into it by product id: a new product appends a line, a product already present
+  adds up its `quantity`, `total` and `discountedTotal`. The cart's `total`, `discountedTotal` and
+  `totalQuantity` are then recomputed from the lines, rounded to cents.
+- The persisted shape is versioned. A state saved in an older shape is dropped on rehydrate rather
+  than migrated: it is display-only.
 - The provider lives in the cart entity and is mounted inside the dashboard's authenticated
   Suspense boundary, once the user is known (§9) — not in a layout, which must not await the
   session.
-- Hydration is client-only (`skipHydration` + `rehydrate()` after mount); locally added carts
-  render after hydration.
+- Hydration is client-only (`skipHydration` + `rehydrate()` after mount); the local cart renders
+  after hydration.
 - Cleared on every way out: the logout button, `UNAUTHENTICATED` in the BFF client, and on mount
   of `/login` (where all paths end, including the proxy's server-side redirect, which cannot touch
   `sessionStorage`).
 - Display-only: never sent to the server, never treated as a source of truth.
 - If `sessionStorage` is unavailable (blocked by the browser), the store works in memory for the
   page's lifetime; nothing breaks.
-- Each tab has its own `sessionStorage`; a new tab starts without locally added carts.
+- Each tab has its own `sessionStorage`; a new tab starts without the local cart.
 
 ## 9. Rendering
 
@@ -474,7 +484,7 @@ Vitest, node environment. Unit tests cover logic and flows, not markup.
 | Proxy               | the access matrix (§3.1); `/login?session=expired` clears cookies; proactive refresh sets response cookies and forwards the request header; rejected refresh → cleared cookies + redirect; transient refresh failure → request passes through; matcher excludes `/api` and static assets (`next/experimental/testing/server`)                                                                                           |
 | Route handlers      | login sets cookies and **never returns tokens**; invalid credentials → `INVALID_CREDENTIALS`; logout clears cookies; products validates `skip`/`limit`; carts takes the user id from the session, not the body; error shape; **upstream text never leaks** — an upstream `{"message":"invalid token"}` yields the catalog message and the response body does not contain `invalid token`; zod messages are not returned |
 | BFF client          | error parsing; `UNAUTHENTICATED` → navigation to `/login`; network failure → `NETWORK_ERROR`; non-JSON or HTML error body → `UPSTREAM_ERROR` with the catalog message, never the raw text                                                                                                                                                                                                                               |
-| Cart store          | key per user id, append, clear, no module-level instance                                                                                                                                                                                                                                                                                                                                                                |
+| Cart store          | key per user id; merge into one cart (a new line, the same product adds up, totals recomputed from the lines); clear; an older persisted shape dropped without an error; no module-level instance                                                                                                                                                                                                                       |
 
 The single-refresh guarantee is provable only here: DummyJSON accepts duplicate refreshes (§2.3),
 so a broken implementation would still look correct against the live API.

@@ -1,7 +1,7 @@
 ---
 id: ECOM-11
 title: Single local cart for added products
-status: todo
+status: done
 depends_on: [ECOM-09]
 branch: fix/ecom-11-single-local-cart
 ---
