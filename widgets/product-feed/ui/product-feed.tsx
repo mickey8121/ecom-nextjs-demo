@@ -1,17 +1,19 @@
 'use client';
 
 import { ProductCard, type ProductDto } from '@/entities/product';
+import { AddToCartButton } from '@/features/add-to-cart';
 import {
   LoadMoreButton,
   useProductPagination,
 } from '@/features/product-pagination';
 import type { ListPage } from '@/shared/api';
 
-export function ProductFeed({
-  initialPage,
-}: {
+type ProductFeedProps = {
   initialPage: ListPage<ProductDto>;
-}) {
+  canAddToCart: boolean;
+};
+
+export function ProductFeed({ initialPage, canAddToCart }: ProductFeedProps) {
   const { items, total, pending, hasMore, loadMore } =
     useProductPagination(initialPage);
 
@@ -24,7 +26,12 @@ export function ProductFeed({
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {items.map((product) => (
           <li key={product.id} className="grid">
-            <ProductCard product={product} />
+            <ProductCard
+              product={product}
+              actions={
+                canAddToCart && <AddToCartButton productId={product.id} />
+              }
+            />
           </li>
         ))}
       </ul>

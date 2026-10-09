@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 
+import { CartStoreProvider } from '@/entities/cart';
 import { getUserCarts } from '@/entities/cart/index.server';
 import { getProducts } from '@/entities/product/index.server';
 import { getCurrentUser } from '@/entities/user/index.server';
@@ -28,14 +29,14 @@ export async function AuthenticatedDashboard() {
     <Alert variant="error">{user.message}</Alert>
   );
 
-  return (
+  const frame = (
     <DashboardFrame
       header={user.ok ? <DashboardHeader user={user.data} /> : userFailure}
       carts={
         user.ok ? (
           <Suspense fallback={<SectionLoading label="Loading carts…" />}>
             <SectionData load={getUserCarts(client, user.data.id)}>
-              {(carts) => <CartOverview carts={carts} />}
+              {(carts) => <CartOverview serverCarts={carts} />}
             </SectionData>
           </Suspense>
         ) : (
@@ -45,10 +46,18 @@ export async function AuthenticatedDashboard() {
       products={
         <Suspense fallback={<SectionLoading label="Loading products…" />}>
           <SectionData load={products}>
-            {(page) => <ProductFeed initialPage={page} />}
+            {(page) => (
+              <ProductFeed initialPage={page} canAddToCart={user.ok} />
+            )}
           </SectionData>
         </Suspense>
       }
     />
+  );
+
+  return user.ok ? (
+    <CartStoreProvider userId={user.data.id}>{frame}</CartStoreProvider>
+  ) : (
+    frame
   );
 }
