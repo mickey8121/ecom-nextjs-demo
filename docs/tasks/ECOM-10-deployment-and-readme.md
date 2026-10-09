@@ -1,7 +1,7 @@
 ---
 id: ECOM-10
 title: Deployment and README
-status: todo
+status: done
 depends_on: [ECOM-08, ECOM-09]
 branch: docs/ecom-10-deployment-and-readme
 ---
