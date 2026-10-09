@@ -78,7 +78,7 @@ describe('POST /api/carts', () => {
     expect(await response.json()).toEqual({
       cart: {
         id: 209,
-        items: [item],
+        items: [{ ...item, discountedTotal: 14 }],
         total: 14.99,
         discountedTotal: 14,
         totalQuantity: 1,

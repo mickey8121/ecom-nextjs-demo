@@ -3,11 +3,11 @@ import { createStore } from 'zustand/vanilla';
 
 import { SESSION_STORAGE_PREFIX } from '@/shared/config';
 
-import type { CartDto } from './cart';
+import { type CartDto, mergeCart } from './cart';
 
 export type CartStoreState = {
-  carts: CartDto[];
-  addCart(cart: CartDto): void;
+  cart: CartDto | null;
+  addToCart(cart: CartDto): void;
   clear(): void;
 };
 
@@ -19,14 +19,18 @@ export function createCartStore(userId: number) {
   return createStore<CartStoreState>()(
     persist(
       (set) => ({
-        carts: [],
-        addCart: (cart) => set((state) => ({ carts: [...state.carts, cart] })),
-        clear: () => set({ carts: [] }),
+        cart: null,
+        addToCart: (cart) =>
+          set((state) => ({ cart: mergeCart(state.cart, cart) })),
+        clear: () => set({ cart: null }),
       }),
       {
         name: cartStorageKey(userId),
         storage: createJSONStorage(() => sessionStorage),
-        partialize: ({ carts }) => ({ carts }),
+        partialize: ({ cart }) => ({ cart }),
+        version: 1,
+        // A cart from an older shape is display-only, so it is dropped rather than migrated.
+        migrate: () => ({ cart: null }),
         skipHydration: true,
       },
     ),

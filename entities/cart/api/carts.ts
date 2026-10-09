@@ -2,7 +2,13 @@ import 'server-only';
 
 import type { AuthenticatedClient } from '@/shared/api/index.server';
 
-import { toCartDto, type CartDto, type CartPayload } from '../model/cart';
+import {
+  toAddedCartDto,
+  toCartDto,
+  type AddedCartPayload,
+  type CartDto,
+  type UserCartPayload,
+} from '../model/cart';
 
 export type NewCartItem = {
   productId: number;
@@ -13,7 +19,7 @@ export async function getUserCarts(
   client: AuthenticatedClient,
   userId: number,
 ): Promise<CartDto[]> {
-  const { carts } = await client.request<{ carts: CartPayload[] }>({
+  const { carts } = await client.request<{ carts: UserCartPayload[] }>({
     path: `/auth/carts/user/${userId}`,
   });
   return carts.map(toCartDto);
@@ -24,7 +30,7 @@ export async function addCart(
   userId: number,
   items: NewCartItem[],
 ): Promise<CartDto> {
-  const payload = await client.request<CartPayload>({
+  const payload = await client.request<AddedCartPayload>({
     path: '/auth/carts/add',
     method: 'POST',
     body: {
@@ -35,5 +41,5 @@ export async function addCart(
       })),
     },
   });
-  return toCartDto(payload);
+  return toAddedCartDto(payload);
 }
